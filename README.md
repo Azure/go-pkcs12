@@ -8,7 +8,7 @@ It is intented for decoding P12/PFX-stored certificate+key for use with the cryp
 ## Example
 
 ```go
-var p12, err = base64.StdEncoding.DecodeString(`base64-encoded-pfx-file-from-publishsettings==`)
+var p12, err = base64.StdEncoding.DecodeString(`base64-encoded-pfx-file`)
 if err != nil {
 	panic(err)
 }
