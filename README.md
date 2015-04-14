@@ -1,5 +1,7 @@
 # Package pkcs12
 
+[![GoDoc](https://godoc.org/github.com/Azure/go-pkcs12?status.svg)](https://godoc.org/github.com/Azure/go-pkcs12)
+
 Package pkcs12 provides some Go implementations of PKCS#12.
 
 This implementation is distilled from https://tools.ietf.org/html/rfc7292 and referenced documents.
