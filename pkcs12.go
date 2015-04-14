@@ -50,7 +50,7 @@ func (i encryptedContentInfo) GetData() []byte { return i.EncryptedContent }
 type safeBag struct {
 	Id         asn1.ObjectIdentifier
 	Value      asn1.RawValue     `asn1:"tag:0,explicit"`
-	Attributes []pkcs12Attribute `asn1:"set, optional"`
+	Attributes []pkcs12Attribute `asn1:"set,optional"`
 }
 
 type pkcs12Attribute struct {
@@ -277,7 +277,7 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 	}
 
 	if len(authenticatedSafe) != 2 {
-		return nil, nil, UnsupportedFormat(fmt.Sprintf("Expected two items in the authenticated safe, but found", len(authenticatedSafe)))
+		return nil, nil, UnsupportedFormat(fmt.Sprintf("Expected two items in the authenticated safe, but found %d", len(authenticatedSafe)))
 	}
 
 	for _, ci := range authenticatedSafe {

@@ -23,7 +23,7 @@ func TestPfx(t *testing.T) {
 
 		err = pk.(*rsa.PrivateKey).Validate()
 		if err != nil {
-			t.Errorf("err while validating private key:", err)
+			t.Errorf("err while validating private key: %v", err)
 		}
 
 		if c.Subject.CommonName != commonName {
@@ -84,7 +84,7 @@ func ExampleConvertToPEM() {
 	}
 
 	config.BuildNameToCertificate()
-	for name, _ := range config.NameToCertificate {
+	for name := range config.NameToCertificate {
 		fmt.Println(name)
 	}
 }
