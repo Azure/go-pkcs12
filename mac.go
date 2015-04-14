@@ -51,7 +51,8 @@ func verifyMac(macData *macData, message, password []byte) error {
 	return nil
 }
 
-// Error indicating that the supplied password is incorrect. Usually, P12/PFX data is signed to be able to verify the password.
+// PasswordIncorrect Error indicates that the supplied password is incorrect.
+// Usually, P12/PFX data is signed to be able to verify the password.
 type PasswordIncorrect string
 
 func (e PasswordIncorrect) Error() string { return string(e) }

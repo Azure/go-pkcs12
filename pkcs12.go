@@ -1,7 +1,7 @@
 // Package pkcs12 provides some implementations of PKCS#12.
 //
 // This implementation is distilled from https://tools.ietf.org/html/rfc7292 and referenced documents.
-// It is intented for decoding P12/PFX-stored certificate+key for use with the crypto/tls package.
+// It is intended for decoding P12/PFX-stored certificate+key for use with the crypto/tls package.
 package pkcs12
 
 import (
@@ -66,12 +66,13 @@ type encryptedPrivateKeyInfo struct {
 func (i encryptedPrivateKeyInfo) GetAlgorithm() pkix.AlgorithmIdentifier { return i.AlgorithmIdentifier }
 func (i encryptedPrivateKeyInfo) GetData() []byte                        { return i.EncryptedData }
 
-// Error indicating that the input is in an unsupported format. The format may be allowed by the RFC's, but may not be implemented by this package.
+// UnsupportedFormat Error indicates that the input is in an unsupported format.
+// The format may be allowed by the RFC's, but may not be implemented by this package.
 type UnsupportedFormat string
 
 func (e UnsupportedFormat) Error() string { return string(e) }
 
-// Convert all "safe bags" contained in pfxData to PEM blocks.
+// ConvertToPEM converts all "safe bags" contained in pfxData to PEM blocks.
 func ConvertToPEM(pfxData []byte, password string) (blocks []*pem.Block, err error) {
 	p, err := bmpString(password)
 	password = ""
@@ -181,7 +182,8 @@ func convertAttribute(attribute *pkcs12Attribute) (key, value string, err error)
 	return key, value, nil
 }
 
-// Extract certificate and private key from pfxData. This function assumes that there is only one certificate and only one provate key in the pfxData.
+// Decode extracts a certificate and private key from pfxData.
+// This function assumes that there is only one certificate and only one private key in the pfxData.
 func Decode(pfxData []byte, password string) (privateKey interface{}, certificate *x509.Certificate, err error) {
 	p, err := bmpString(password)
 	password = ""
