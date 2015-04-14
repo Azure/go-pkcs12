@@ -73,10 +73,15 @@ type UnsupportedFormat string
 func (e UnsupportedFormat) Error() string { return string(e) }
 
 // ConvertToPEM converts all "safe bags" contained in pfxData to PEM blocks.
-func ConvertToPEM(pfxData []byte, password string) (blocks []*pem.Block, err error) {
-	p, err := bmpString(password)
-	password = ""
+func ConvertToPEM(pfxData []byte, utf8Password []byte) (blocks []*pem.Block, err error) {
+	p, err := bmpString(utf8Password)
+
+	for i := 0; i < len(utf8Password); i++ {
+		utf8Password[i] = 0
+	}
+
 	if err != nil {
+		err = PasswordIncorrect(err.Error())
 		return
 	}
 
@@ -184,9 +189,12 @@ func convertAttribute(attribute *pkcs12Attribute) (key, value string, err error)
 
 // Decode extracts a certificate and private key from pfxData.
 // This function assumes that there is only one certificate and only one private key in the pfxData.
-func Decode(pfxData []byte, password string) (privateKey interface{}, certificate *x509.Certificate, err error) {
-	p, err := bmpString(password)
-	password = ""
+func Decode(pfxData []byte, utf8Password []byte) (privateKey interface{}, certificate *x509.Certificate, err error) {
+	p, err := bmpString(utf8Password)
+
+	for i := 0; i < len(utf8Password); i++ {
+		utf8Password[i] = 0
+	}
 
 	if err != nil {
 		return nil, nil, err

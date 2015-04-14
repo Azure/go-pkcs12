@@ -13,7 +13,7 @@ func TestPfx(t *testing.T) {
 	for commonName, base64P12 := range testdata {
 		var p12, _ = base64.StdEncoding.DecodeString(base64P12)
 
-		pk, c, err := Decode(p12, "")
+		pk, c, err := Decode(p12, []byte(""))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -35,7 +35,7 @@ func TestPfx(t *testing.T) {
 func TestPEM(t *testing.T) {
 	for commonName, base64P12 := range testdata {
 		var p12, _ = base64.StdEncoding.DecodeString(base64P12)
-		blocks, err := ConvertToPEM(p12, "")
+		blocks, err := ConvertToPEM(p12, []byte(""))
 		if err != nil {
 			t.Fatalf("err while converting to PEM: %v", err)
 		}
@@ -62,7 +62,7 @@ func TestPEM(t *testing.T) {
 
 func ExampleConvertToPEM() {
 	var p12, _ = base64.StdEncoding.DecodeString(`MIIJzgIBAzCCCZQGCS ... CA+gwggPk==`)
-	blocks, err := ConvertToPEM(p12, "password")
+	blocks, err := ConvertToPEM(p12, []byte("password"))
 	if err != nil {
 		panic(err)
 	}

@@ -20,7 +20,7 @@ func TestPbDecrypterFor(t *testing.T) {
 		},
 	}
 
-	pass, _ := bmpString("Sesame open")
+	pass, _ := bmpString([]byte("Sesame open"))
 
 	_, err := pbDecrypterFor(alg, pass)
 	if err == nil || err.Error() != "Algorithm 1.2.3 is not supported" {
@@ -68,7 +68,7 @@ func TestPbDecrypt(t *testing.T) {
 				}.RawASN1(),
 			},
 		}
-		p, _ := bmpString("sesame")
+		p, _ := bmpString([]byte("sesame"))
 
 		m, err := pbDecrypt(td, p)
 
