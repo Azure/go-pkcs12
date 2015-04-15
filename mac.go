@@ -1,7 +1,6 @@
 package pkcs12
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
 	"crypto/x509/pkix"
@@ -45,7 +44,7 @@ func verifyMac(macData *macData, message, password []byte) error {
 	mac.Write(message)
 	expectedMAC := mac.Sum(nil)
 
-	if bytes.Compare(macData.Mac.Digest, expectedMAC) != 0 {
+	if !hmac.Equal(macData.Mac.Digest, expectedMAC) {
 		return PasswordIncorrect("Incorrect password, MAC mismatch")
 	}
 	return nil
