@@ -48,13 +48,13 @@ func (i encryptedContentInfo) GetAlgorithm() pkix.AlgorithmIdentifier {
 func (i encryptedContentInfo) GetData() []byte { return i.EncryptedContent }
 
 type safeBag struct {
-	Id         asn1.ObjectIdentifier
+	ID         asn1.ObjectIdentifier
 	Value      asn1.RawValue     `asn1:"tag:0,explicit"`
 	Attributes []pkcs12Attribute `asn1:"set,optional"`
 }
 
 type pkcs12Attribute struct {
-	Id    asn1.ObjectIdentifier
+	ID    asn1.ObjectIdentifier
 	Value asn1.RawValue `ans1:"set"`
 }
 
@@ -109,7 +109,7 @@ func convertBag(bag *safeBag, password []byte) (*pem.Block, error) {
 		b.Headers[k] = v
 	}
 
-	bagType := bagTypeNameByOID[bag.Id.String()]
+	bagType := bagTypeNameByOID[bag.ID.String()]
 	switch bagType {
 	case certBagType:
 		b.Type = "CERTIFICATE"
@@ -138,25 +138,25 @@ func convertBag(bag *safeBag, password []byte) (*pem.Block, error) {
 			return nil, UnsupportedFormat("found unknown private key type in PKCS#8 wrapping")
 		}
 	default:
-		return nil, UnsupportedFormat("don't know how to convert a safe bag of type " + bag.Id.String())
+		return nil, UnsupportedFormat("don't know how to convert a safe bag of type " + bag.ID.String())
 	}
 	return b, nil
 }
 
 const (
 	oidFriendlyName     = "1.2.840.113549.1.9.20"
-	oidLocalKeyId       = "1.2.840.113549.1.9.21"
+	oidLocalKeyID       = "1.2.840.113549.1.9.21"
 	oidMicrosoftCSPName = "1.3.6.1.4.1.311.17.1"
 )
 
 var attributeNameByOID = map[string]string{
 	oidFriendlyName:     "friendlyName",
-	oidLocalKeyId:       "localKeyId",
+	oidLocalKeyID:       "localKeyId",
 	oidMicrosoftCSPName: "Microsoft CSP Name", // openssl-compatible
 }
 
 func convertAttribute(attribute *pkcs12Attribute) (key, value string, err error) {
-	oid := attribute.Id.String()
+	oid := attribute.ID.String()
 	key = attributeNameByOID[oid]
 	switch oid {
 	case oidMicrosoftCSPName:
@@ -168,14 +168,14 @@ func convertAttribute(attribute *pkcs12Attribute) (key, value string, err error)
 		if value, err = decodeBMPString(attribute.Value.Bytes); err != nil {
 			return
 		}
-	case oidLocalKeyId:
+	case oidLocalKeyID:
 		id := new([]byte)
 		if _, err = asn1.Unmarshal(attribute.Value.Bytes, id); err != nil {
 			return
 		}
 		value = fmt.Sprintf("% x", *id)
 	default:
-		err = UnsupportedFormat("don't know how to handle attribute with OID " + attribute.Id.String())
+		err = UnsupportedFormat("don't know how to handle attribute with OID " + attribute.ID.String())
 		return
 	}
 
@@ -202,7 +202,7 @@ func Decode(pfxData []byte, password string) (privateKey interface{}, certificat
 	}
 
 	for _, bag := range bags {
-		bagType := bagTypeNameByOID[bag.Id.String()]
+		bagType := bagTypeNameByOID[bag.ID.String()]
 
 		switch bagType {
 		case certBagType:
