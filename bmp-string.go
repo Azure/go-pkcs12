@@ -1,6 +1,7 @@
 package pkcs12
 
 import (
+	"errors"
 	"unicode/utf16"
 	"unicode/utf8"
 )
@@ -20,7 +21,7 @@ func bmpString(utf8String []byte) ([]byte, error) {
 		c, size := utf8.DecodeRune(utf8String[start:])
 		start += size
 		if t, _ := utf16.EncodeRune(c); t != 0xfffd {
-			return nil, UnsupportedFormat("string contains characters that cannot be encoded in UCS-2")
+			return nil, errors.New("string contains characters that cannot be encoded in UCS-2")
 		}
 		rv = append(rv, byte(c/256), byte(c%256))
 	}
@@ -30,7 +31,7 @@ func bmpString(utf8String []byte) ([]byte, error) {
 
 func decodeBMPString(bmpString []byte) (string, error) {
 	if len(bmpString)%2 != 0 {
-		return "", UnsupportedFormat("expected BMP byte string to be even length")
+		return "", errors.New("expected BMP byte string to be an even length")
 	}
 
 	// strip terminator if present

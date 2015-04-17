@@ -36,23 +36,23 @@ type certBag struct {
 func decodePkcs8ShroudedKeyBag(asn1Data, password []byte) (privateKey interface{}, err error) {
 	pkinfo := new(encryptedPrivateKeyInfo)
 	if _, err = asn1.Unmarshal(asn1Data, pkinfo); err != nil {
-		err = fmt.Errorf("Error decoding PKCS8 shrouded key bag: %v", err)
+		err = fmt.Errorf("error decoding PKCS8 shrouded key bag: %v", err)
 		return nil, err
 	}
 
 	pkData, err := pbDecrypt(pkinfo, password)
 	if err != nil {
-		err = fmt.Errorf("Error decryting PKCS8 shrouded key bag: %v", err)
+		err = fmt.Errorf("error decrypting PKCS8 shrouded key bag: %v", err)
 		return
 	}
 
 	rv := new(asn1.RawValue)
 	if _, err = asn1.Unmarshal(pkData, rv); err != nil {
-		err = fmt.Errorf("could not decode decryted private key data")
+		err = fmt.Errorf("could not decode decrypted private key data")
 	}
 
 	if privateKey, err = x509.ParsePKCS8PrivateKey(pkData); err != nil {
-		err = fmt.Errorf("Error parsing PKCS8 private key: %v", err)
+		err = fmt.Errorf("error parsing PKCS8 private key: %v", err)
 		return nil, err
 	}
 	return
@@ -61,11 +61,11 @@ func decodePkcs8ShroudedKeyBag(asn1Data, password []byte) (privateKey interface{
 func decodeCertBag(asn1Data []byte) (x509Certificates []byte, err error) {
 	bag := new(certBag)
 	if _, err := asn1.Unmarshal(asn1Data, bag); err != nil {
-		err = fmt.Errorf("Error decoding cert bag: %v", err)
+		err = fmt.Errorf("error decoding cert bag: %v", err)
 		return nil, err
 	}
 	if bag.ID.String() != oidCertTypeX509Certificate {
-		return nil, UnsupportedFormat("only X509 certificates are supported")
+		return nil, newNotImplementedError("only X509 certificates are supported")
 	}
 	return bag.Data, nil
 }

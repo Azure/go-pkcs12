@@ -35,7 +35,7 @@ var (
 func verifyMac(macData *macData, message, password []byte) error {
 	name, ok := hashNameByID[macData.Mac.Algorithm.Algorithm.String()]
 	if !ok {
-		return UnsupportedFormat("Unknown digest algorithm: " + macData.Mac.Algorithm.Algorithm.String())
+		return newNotImplementedError("unknown digest algorithm: " + macData.Mac.Algorithm.Algorithm.String())
 	}
 	k := deriveMacKeyByAlg[name](macData.MacSalt, password, macData.Iterations)
 	password = nil
@@ -45,13 +45,7 @@ func verifyMac(macData *macData, message, password []byte) error {
 	expectedMAC := mac.Sum(nil)
 
 	if !hmac.Equal(macData.Mac.Digest, expectedMAC) {
-		return PasswordIncorrect("Incorrect password, MAC mismatch")
+		return ErrIncorrectPassword
 	}
 	return nil
 }
-
-// PasswordIncorrect Error indicates that the supplied password is incorrect.
-// Usually, P12/PFX data is signed to be able to verify the password.
-type PasswordIncorrect string
-
-func (e PasswordIncorrect) Error() string { return string(e) }

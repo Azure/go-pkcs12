@@ -12,6 +12,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
+	"errors"
 	"fmt"
 )
 
@@ -66,12 +67,6 @@ type encryptedPrivateKeyInfo struct {
 func (i encryptedPrivateKeyInfo) GetAlgorithm() pkix.AlgorithmIdentifier { return i.AlgorithmIdentifier }
 func (i encryptedPrivateKeyInfo) GetData() []byte                        { return i.EncryptedData }
 
-// UnsupportedFormat Error indicates that the input is in an unsupported format.
-// The format may be allowed by the RFC's, but may not be implemented by this package.
-type UnsupportedFormat string
-
-func (e UnsupportedFormat) Error() string { return string(e) }
-
 // ConvertToPEM converts all "safe bags" contained in pfxData to PEM blocks.
 func ConvertToPEM(pfxData []byte, utf8Password []byte) (blocks []*pem.Block, err error) {
 	p, err := bmpString(utf8Password)
@@ -81,8 +76,7 @@ func ConvertToPEM(pfxData []byte, utf8Password []byte) (blocks []*pem.Block, err
 	}
 
 	if err != nil {
-		err = PasswordIncorrect(err.Error())
-		return
+		return nil, ErrIncorrectPassword
 	}
 
 	bags, p, err := getSafeContents(pfxData, p)
@@ -140,10 +134,10 @@ func convertBag(bag *safeBag, password []byte) (*pem.Block, error) {
 				return nil, err
 			}
 		default:
-			return nil, UnsupportedFormat("found unknown private key type in PKCS#8 wrapping")
+			return nil, errors.New("found unknown private key type in PKCS#8 wrapping")
 		}
 	default:
-		return nil, UnsupportedFormat("don't know how to convert a safe bag of type " + bag.ID.String())
+		return nil, errors.New("don't know how to convert a safe bag of type " + bag.ID.String())
 	}
 	return b, nil
 }
@@ -180,7 +174,7 @@ func convertAttribute(attribute *pkcs12Attribute) (key, value string, err error)
 		}
 		value = fmt.Sprintf("% x", *id)
 	default:
-		err = UnsupportedFormat("don't know how to handle attribute with OID " + attribute.ID.String())
+		err = errors.New("don't know how to handle attribute with OID " + attribute.ID.String())
 		return
 	}
 
@@ -205,7 +199,7 @@ func Decode(pfxData []byte, utf8Password []byte) (privateKey interface{}, certif
 	}
 
 	if len(bags) != 2 {
-		err = UnsupportedFormat("Expected exactly two safe bags in the PFX PDU")
+		err = errors.New("expected exactly two safe bags in the PFX PDU")
 		return
 	}
 
@@ -223,7 +217,7 @@ func Decode(pfxData []byte, utf8Password []byte) (privateKey interface{}, certif
 				return nil, nil, err
 			}
 			if len(certs) != 1 {
-				err = UnsupportedFormat("Expected exactly one certificate in the certBag")
+				err = errors.New("expected exactly one certificate in the certBag")
 				return nil, nil, err
 			}
 			certificate = certs[0]
@@ -235,10 +229,10 @@ func Decode(pfxData []byte, utf8Password []byte) (privateKey interface{}, certif
 	}
 
 	if certificate == nil {
-		return nil, nil, UnsupportedFormat("certificate missing")
+		return nil, nil, errors.New("certificate missing")
 	}
 	if privateKey == nil {
-		return nil, nil, UnsupportedFormat("private key missing")
+		return nil, nil, errors.New("private key missing")
 	}
 
 	return
@@ -251,11 +245,11 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 	}
 
 	if pfx.Version != 3 {
-		return nil, nil, UnsupportedFormat("Can only decode v3 PFX PDU's")
+		return nil, nil, newNotImplementedError("can only decode v3 PFX PDU's")
 	}
 
 	if pfx.AuthSafe.ContentType.String() != oidDataContentType {
-		return nil, nil, UnsupportedFormat("Only password-protected PFX is implemented")
+		return nil, nil, newNotImplementedError("only password-protected PFX is implemented")
 	}
 
 	// unmarshal the explicit bytes in the content for type 'data'
@@ -267,7 +261,7 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 	password = nil
 	if len(pfx.MacData.Mac.Algorithm.Algorithm) > 0 {
 		if err = verifyMac(&pfx.MacData, pfx.AuthSafe.Content.Bytes, actualPassword); err != nil {
-			if _, pwIncorrect := err.(PasswordIncorrect); pwIncorrect && bytes.Compare(actualPassword, []byte{0, 0}) == 0 {
+			if err == ErrIncorrectPassword && bytes.Compare(actualPassword, []byte{0, 0}) == 0 {
 				// some implementations use an empty byte array for the empty string password
 				// try one more time with empty-empty password
 				actualPassword = []byte{}
@@ -285,7 +279,7 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 	}
 
 	if len(authenticatedSafe) != 2 {
-		return nil, nil, UnsupportedFormat(fmt.Sprintf("Expected two items in the authenticated safe, but found %d", len(authenticatedSafe)))
+		return nil, nil, newNotImplementedError("expected exactly two items in the authenticated safe")
 	}
 
 	for _, ci := range authenticatedSafe {
@@ -301,13 +295,13 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 				return
 			}
 			if encryptedData.Version != 0 {
-				return nil, nil, UnsupportedFormat("Only version 0 of EncryptedData is supported")
+				return nil, nil, newNotImplementedError("only version 0 of EncryptedData is supported")
 			}
 			if data, err = pbDecrypt(encryptedData.EncryptedContentInfo, actualPassword); err != nil {
 				return
 			}
 		default:
-			return nil, nil, UnsupportedFormat("Only data and encryptedData content types are supported in authenticated safe")
+			return nil, nil, newNotImplementedError("only data and encryptedData content types are supported in authenticated safe")
 		}
 
 		var safeContents []safeBag
