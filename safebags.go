@@ -25,11 +25,11 @@ const (
 	safeContentsBagType     = "safeContentsBag"
 
 	oidCertTypeX509Certificate = "1.2.840.113549.1.9.22.1"
-	oidLocalKeyIdAttribute     = "1.2.840.113549.1.9.21"
+	oidLocalKeyIDAttribute     = "1.2.840.113549.1.9.21"
 )
 
 type certBag struct {
-	Id   asn1.ObjectIdentifier
+	ID   asn1.ObjectIdentifier
 	Data []byte `asn1:"tag:0,explicit"`
 }
 
@@ -64,7 +64,7 @@ func decodeCertBag(asn1Data []byte) (x509Certificates []byte, err error) {
 		err = fmt.Errorf("Error decoding cert bag: %v", err)
 		return nil, err
 	}
-	if bag.Id.String() != oidCertTypeX509Certificate {
+	if bag.ID.String() != oidCertTypeX509Certificate {
 		return nil, UnsupportedFormat("only X509 certificates are supported")
 	}
 	return bag.Data, nil
