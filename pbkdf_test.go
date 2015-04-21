@@ -8,7 +8,7 @@ import (
 var hit = false
 
 func TestThatPBKDFWorksCorrectlyForLongKeys(t *testing.T) {
-	pbkdf := deriveKeyByAlg[pbeWithSHAAnd3_KeyTripleDES_CBC]
+	pbkdf := deriveKeyByAlg[pbeWithSHAAnd3KeyTripleDESCBC]
 
 	salt := []byte("\xff\xff\xff\xff\xff\xff\xff\xff")
 	password, _ := bmpString("sesame")

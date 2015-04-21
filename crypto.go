@@ -9,22 +9,23 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"fmt"
+
 	"github.com/ebfe/rc2"
 )
 
 const (
-	pbeWithSHAAnd3_KeyTripleDES_CBC = "pbeWithSHAAnd3-KeyTripleDES-CBC"
-	pbewithSHAAnd40BitRC2_CBC       = "pbewithSHAAnd40BitRC2-CBC"
+	pbeWithSHAAnd3KeyTripleDESCBC = "pbeWithSHAAnd3-KeyTripleDES-CBC"
+	pbewithSHAAnd40BitRC2CBC      = "pbewithSHAAnd40BitRC2-CBC"
 )
 
 var algByOID = map[string]string{
-	"1.2.840.113549.1.12.1.3": pbeWithSHAAnd3_KeyTripleDES_CBC,
-	"1.2.840.113549.1.12.1.6": pbewithSHAAnd40BitRC2_CBC,
+	"1.2.840.113549.1.12.1.3": pbeWithSHAAnd3KeyTripleDESCBC,
+	"1.2.840.113549.1.12.1.6": pbewithSHAAnd40BitRC2CBC,
 }
 
 var blockcodeByAlg = map[string]func(key []byte) (cipher.Block, error){
-	pbeWithSHAAnd3_KeyTripleDES_CBC: des.NewTripleDESCipher,
-	pbewithSHAAnd40BitRC2_CBC:       rc2.NewCipher,
+	pbeWithSHAAnd3KeyTripleDESCBC: des.NewTripleDESCipher,
+	pbewithSHAAnd40BitRC2CBC:      rc2.NewCipher,
 }
 
 type pbeParams struct {

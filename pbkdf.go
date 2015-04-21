@@ -7,18 +7,18 @@ import (
 
 var (
 	deriveKeyByAlg = map[string]func(salt, password []byte, iterations int) []byte{
-		pbeWithSHAAnd3_KeyTripleDES_CBC: func(salt, password []byte, iterations int) []byte {
+		pbeWithSHAAnd3KeyTripleDESCBC: func(salt, password []byte, iterations int) []byte {
 			return pbkdf(sha1Sum, 20, 64, salt, password, iterations, 1, 24)
 		},
-		pbewithSHAAnd40BitRC2_CBC: func(salt, password []byte, iterations int) []byte {
+		pbewithSHAAnd40BitRC2CBC: func(salt, password []byte, iterations int) []byte {
 			return pbkdf(sha1Sum, 20, 64, salt, password, iterations, 1, 5)
 		},
 	}
 	deriveIVByAlg = map[string]func(salt, password []byte, iterations int) []byte{
-		pbeWithSHAAnd3_KeyTripleDES_CBC: func(salt, password []byte, iterations int) []byte {
+		pbeWithSHAAnd3KeyTripleDESCBC: func(salt, password []byte, iterations int) []byte {
 			return pbkdf(sha1Sum, 20, 64, salt, password, iterations, 2, 8)
 		},
-		pbewithSHAAnd40BitRC2_CBC: func(salt, password []byte, iterations int) []byte {
+		pbewithSHAAnd40BitRC2CBC: func(salt, password []byte, iterations int) []byte {
 			return pbkdf(sha1Sum, 20, 64, salt, password, iterations, 2, 8)
 		},
 	}
