@@ -16,7 +16,7 @@ func TestVerifyMac(t *testing.T) {
 	}
 
 	message := []byte{11, 12, 13, 14, 15}
-	password, _ := bmpString("")
+	password, _ := bmpString([]byte(""))
 
 	td.Mac.Algorithm.Algorithm = asn1.ObjectIdentifier([]int{1, 2, 3})
 	err := verifyMac(&td, message, password)
@@ -30,7 +30,7 @@ func TestVerifyMac(t *testing.T) {
 		t.Errorf("err: %v", err)
 	}
 
-	password, _ = bmpString("Sesame open")
+	password, _ = bmpString([]byte("Sesame open"))
 	err = verifyMac(&td, message, password)
 	if err != nil {
 		t.Errorf("err: %v", err)

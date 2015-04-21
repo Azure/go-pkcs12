@@ -2,9 +2,10 @@ package pkcs12
 
 import (
 	"unicode/utf16"
+	"unicode/utf8"
 )
 
-func bmpString(s string) ([]byte, error) {
+func bmpString(utf8String []byte) ([]byte, error) {
 	// References:
 	// https://tools.ietf.org/html/rfc7292#appendix-B.1
 	// http://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane
@@ -12,8 +13,12 @@ func bmpString(s string) ([]byte, error) {
 	//	  EncodeRune returns 0xfffd if the rune does not need special encoding
 	//  - the above RFC provides the info that BMPStrings are NULL terminated.
 
-	rv := make([]byte, 0, 2*len(s)+2)
-	for _, c := range []rune(s) {
+	rv := make([]byte, 0, 2*len(utf8String)+2)
+
+	start := 0
+	for start < len(utf8String) {
+		c, size := utf8.DecodeRune(utf8String[start:])
+		start += size
 		if t, _ := utf16.EncodeRune(c); t != 0xfffd {
 			return nil, UnsupportedFormat("string contains characters that cannot be encoded in UCS-2")
 		}
