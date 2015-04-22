@@ -10,7 +10,7 @@ import (
 	"encoding/asn1"
 	"fmt"
 
-	"github.com/ebfe/rc2"
+	"github.com/dgryski/go-rc2"
 )
 
 const (
@@ -25,7 +25,9 @@ var algByOID = map[string]string{
 
 var blockcodeByAlg = map[string]func(key []byte) (cipher.Block, error){
 	pbeWithSHAAnd3KeyTripleDESCBC: des.NewTripleDESCipher,
-	pbewithSHAAnd40BitRC2CBC:      rc2.NewCipher,
+	pbewithSHAAnd40BitRC2CBC: func(key []byte) (cipher.Block, error) {
+		return rc2.New(key, len(key)*8)
+	},
 }
 
 type pbeParams struct {
