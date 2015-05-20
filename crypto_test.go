@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/x509/pkix"
 	"encoding/asn1"
-	"fmt"
 	"testing"
 )
 
@@ -23,8 +22,8 @@ func TestPbDecrypterFor(t *testing.T) {
 	pass, _ := bmpString([]byte("Sesame open"))
 
 	_, err := pbDecrypterFor(alg, pass)
-	if err == nil || err.Error() != "Algorithm 1.2.3 is not supported" {
-		t.Errorf("expected different error: %v", err)
+	if _, ok := err.(NotImplementedError); !ok {
+		t.Errorf("expected not implemented error, got: %T %s", err, err)
 	}
 
 	alg.Algorithm = asn1.ObjectIdentifier([]int{1, 2, 840, 113549, 1, 12, 1, 3})
@@ -53,8 +52,8 @@ func TestPbDecrypt(t *testing.T) {
 	expected := []interface{}{
 		[]byte("A secret!"),
 		[]byte("A secret"),
-		fmt.Errorf("decryption error, incorrect padding"),
-		fmt.Errorf("decryption error, incorrect padding"),
+		ErrDecryption,
+		ErrDecryption,
 	}
 
 	for i, c := range tests {

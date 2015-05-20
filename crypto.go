@@ -8,7 +8,6 @@ import (
 	"crypto/des"
 	"crypto/x509/pkix"
 	"encoding/asn1"
-	"fmt"
 
 	"github.com/dgryski/go-rc2"
 )
@@ -38,7 +37,7 @@ type pbeParams struct {
 func pbDecrypterFor(algorithm pkix.AlgorithmIdentifier, password []byte) (cipher.BlockMode, error) {
 	algorithmName, supported := algByOID[algorithm.Algorithm.String()]
 	if !supported {
-		return nil, UnsupportedFormat("Algorithm " + algorithm.Algorithm.String() + " is not supported")
+		return nil, newNotImplementedError("algorithm " + algorithm.Algorithm.String() + " is not supported")
 	}
 
 	var params pbeParams
@@ -75,11 +74,11 @@ func pbDecrypt(info decryptable, password []byte) (decrypted []byte, err error) 
 		m := decrypted[:len(decrypted)-psLen]
 		ps := decrypted[len(decrypted)-psLen:]
 		if bytes.Compare(ps, bytes.Repeat([]byte{byte(psLen)}, psLen)) != 0 {
-			return nil, fmt.Errorf("decryption error, incorrect padding")
+			return nil, ErrDecryption
 		}
 		decrypted = m
 	} else {
-		return nil, fmt.Errorf("decryption error, incorrect padding")
+		return nil, ErrDecryption
 	}
 
 	return
