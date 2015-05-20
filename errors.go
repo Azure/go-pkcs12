@@ -17,7 +17,3 @@ type NotImplementedError string
 func (e NotImplementedError) Error() string {
 	return string(e)
 }
-
-func newNotImplementedError(text string) error {
-	return NotImplementedError(text)
-}

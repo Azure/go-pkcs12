@@ -245,11 +245,11 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 	}
 
 	if pfx.Version != 3 {
-		return nil, nil, newNotImplementedError("can only decode v3 PFX PDU's")
+		return nil, nil, NotImplementedError("can only decode v3 PFX PDU's")
 	}
 
 	if pfx.AuthSafe.ContentType.String() != oidDataContentType {
-		return nil, nil, newNotImplementedError("only password-protected PFX is implemented")
+		return nil, nil, NotImplementedError("only password-protected PFX is implemented")
 	}
 
 	// unmarshal the explicit bytes in the content for type 'data'
@@ -279,7 +279,7 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 	}
 
 	if len(authenticatedSafe) != 2 {
-		return nil, nil, newNotImplementedError("expected exactly two items in the authenticated safe")
+		return nil, nil, NotImplementedError("expected exactly two items in the authenticated safe")
 	}
 
 	for _, ci := range authenticatedSafe {
@@ -295,13 +295,13 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 				return
 			}
 			if encryptedData.Version != 0 {
-				return nil, nil, newNotImplementedError("only version 0 of EncryptedData is supported")
+				return nil, nil, NotImplementedError("only version 0 of EncryptedData is supported")
 			}
 			if data, err = pbDecrypt(encryptedData.EncryptedContentInfo, actualPassword); err != nil {
 				return
 			}
 		default:
-			return nil, nil, newNotImplementedError("only data and encryptedData content types are supported in authenticated safe")
+			return nil, nil, NotImplementedError("only data and encryptedData content types are supported in authenticated safe")
 		}
 
 		var safeContents []safeBag
