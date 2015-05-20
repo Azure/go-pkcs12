@@ -68,7 +68,7 @@ func (i encryptedPrivateKeyInfo) GetAlgorithm() pkix.AlgorithmIdentifier { retur
 func (i encryptedPrivateKeyInfo) GetData() []byte                        { return i.EncryptedData }
 
 // ConvertToPEM converts all "safe bags" contained in pfxData to PEM blocks.
-func ConvertToPEM(pfxData []byte, utf8Password []byte) (blocks []*pem.Block, err error) {
+func ConvertToPEM(pfxData, utf8Password []byte) (blocks []*pem.Block, err error) {
 	p, err := bmpString(utf8Password)
 
 	for i := 0; i < len(utf8Password); i++ {
@@ -183,7 +183,7 @@ func convertAttribute(attribute *pkcs12Attribute) (key, value string, err error)
 
 // Decode extracts a certificate and private key from pfxData.
 // This function assumes that there is only one certificate and only one private key in the pfxData.
-func Decode(pfxData []byte, utf8Password []byte) (privateKey interface{}, certificate *x509.Certificate, err error) {
+func Decode(pfxData, utf8Password []byte) (privateKey interface{}, certificate *x509.Certificate, err error) {
 	p, err := bmpString(utf8Password)
 
 	for i := 0; i < len(utf8Password); i++ {
