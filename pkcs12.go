@@ -74,7 +74,7 @@ const (
 )
 
 // ConvertToPEM converts all "safe bags" contained in pfxData to PEM blocks.
-func ConvertToPEM(pfxData []byte, utf8Password []byte) (blocks []*pem.Block, err error) {
+func ConvertToPEM(pfxData, utf8Password []byte) (blocks []*pem.Block, err error) {
 	p, err := bmpString(utf8Password)
 
 	for i := 0; i < len(utf8Password); i++ {
@@ -189,7 +189,7 @@ func convertAttribute(attribute *pkcs12Attribute) (key, value string, err error)
 
 // Decode extracts a certificate and private key from pfxData.
 // This function assumes that there is only one certificate and only one private key in the pfxData.
-func Decode(pfxData []byte, utf8Password []byte) (privateKey interface{}, certificate *x509.Certificate, err error) {
+func Decode(pfxData, utf8Password []byte) (privateKey interface{}, certificate *x509.Certificate, err error) {
 	p, err := bmpString(utf8Password)
 
 	for i := 0; i < len(utf8Password); i++ {
@@ -251,11 +251,11 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 	}
 
 	if pfx.Version != 3 {
-		return nil, nil, newNotImplementedError("can only decode v3 PFX PDU's")
+		return nil, nil, NotImplementedError("can only decode v3 PFX PDU's")
 	}
 
 	if pfx.AuthSafe.ContentType.String() != oidDataContentType {
-		return nil, nil, newNotImplementedError("only password-protected PFX is implemented")
+		return nil, nil, NotImplementedError("only password-protected PFX is implemented")
 	}
 
 	// unmarshal the explicit bytes in the content for type 'data'
@@ -285,7 +285,7 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 	}
 
 	if len(authenticatedSafe) != 2 {
-		return nil, nil, newNotImplementedError("expected exactly two items in the authenticated safe")
+		return nil, nil, NotImplementedError("expected exactly two items in the authenticated safe")
 	}
 
 	for _, ci := range authenticatedSafe {
@@ -301,13 +301,13 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 				return
 			}
 			if encryptedData.Version != 0 {
-				return nil, nil, newNotImplementedError("only version 0 of EncryptedData is supported")
+				return nil, nil, NotImplementedError("only version 0 of EncryptedData is supported")
 			}
 			if data, err = pbDecrypt(encryptedData.EncryptedContentInfo, actualPassword); err != nil {
 				return
 			}
 		default:
-			return nil, nil, newNotImplementedError("only data and encryptedData content types are supported in authenticated safe")
+			return nil, nil, NotImplementedError("only data and encryptedData content types are supported in authenticated safe")
 		}
 
 		var safeContents []safeBag

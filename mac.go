@@ -35,7 +35,7 @@ var (
 func verifyMac(macData *macData, message, password []byte) error {
 	name, ok := hashNameByID[macData.Mac.Algorithm.Algorithm.String()]
 	if !ok {
-		return newNotImplementedError("unknown digest algorithm: " + macData.Mac.Algorithm.Algorithm.String())
+		return NotImplementedError("unknown digest algorithm: " + macData.Mac.Algorithm.Algorithm.String())
 	}
 	k := deriveMacKeyByAlg[name](macData.MacSalt, password, macData.Iterations)
 	password = nil

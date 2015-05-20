@@ -65,7 +65,7 @@ func decodeCertBag(asn1Data []byte) (x509Certificates []byte, err error) {
 		return nil, err
 	}
 	if bag.ID.String() != oidCertTypeX509Certificate {
-		return nil, newNotImplementedError("only X509 certificates are supported")
+		return nil, NotImplementedError("only X509 certificates are supported")
 	}
 	return bag.Data, nil
 }

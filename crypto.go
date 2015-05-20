@@ -37,7 +37,7 @@ type pbeParams struct {
 func pbDecrypterFor(algorithm pkix.AlgorithmIdentifier, password []byte) (cipher.BlockMode, error) {
 	algorithmName, supported := algByOID[algorithm.Algorithm.String()]
 	if !supported {
-		return nil, newNotImplementedError("algorithm " + algorithm.Algorithm.String() + " is not supported")
+		return nil, NotImplementedError("algorithm " + algorithm.Algorithm.String() + " is not supported")
 	}
 
 	var params pbeParams
