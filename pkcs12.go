@@ -67,6 +67,12 @@ type encryptedPrivateKeyInfo struct {
 func (i encryptedPrivateKeyInfo) GetAlgorithm() pkix.AlgorithmIdentifier { return i.AlgorithmIdentifier }
 func (i encryptedPrivateKeyInfo) GetData() []byte                        { return i.EncryptedData }
 
+// PEM block types
+const (
+	CertificateType = "CERTIFICATE"
+	PrivateKeyType  = "PRIVATE KEY"
+)
+
 // ConvertToPEM converts all "safe bags" contained in pfxData to PEM blocks.
 func ConvertToPEM(pfxData []byte, utf8Password []byte) (blocks []*pem.Block, err error) {
 	p, err := bmpString(utf8Password)
@@ -111,14 +117,14 @@ func convertBag(bag *safeBag, password []byte) (*pem.Block, error) {
 	bagType := bagTypeNameByOID[bag.ID.String()]
 	switch bagType {
 	case certBagType:
-		b.Type = "CERTIFICATE"
+		b.Type = CertificateType
 		certsData, err := decodeCertBag(bag.Value.Bytes)
 		if err != nil {
 			return nil, err
 		}
 		b.Bytes = certsData
 	case pkcs8ShroudedKeyBagType:
-		b.Type = "PRIVATE KEY"
+		b.Type = PrivateKeyType
 
 		key, err := decodePkcs8ShroudedKeyBag(bag.Value.Bytes, password)
 		if err != nil {
