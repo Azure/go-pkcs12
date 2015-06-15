@@ -77,9 +77,11 @@ const (
 func ConvertToPEM(pfxData, utf8Password []byte) (blocks []*pem.Block, err error) {
 	p, err := bmpString(utf8Password)
 
-	for i := 0; i < len(utf8Password); i++ {
-		utf8Password[i] = 0
-	}
+	defer func() { // clear out BMP version of the password before we return
+		for i := 0; i < len(p); i++ {
+			p[i] = 0
+		}
+	}()
 
 	if err != nil {
 		return nil, ErrIncorrectPassword
@@ -191,10 +193,11 @@ func convertAttribute(attribute *pkcs12Attribute) (key, value string, err error)
 // This function assumes that there is only one certificate and only one private key in the pfxData.
 func Decode(pfxData, utf8Password []byte) (privateKey interface{}, certificate *x509.Certificate, err error) {
 	p, err := bmpString(utf8Password)
-
-	for i := 0; i < len(utf8Password); i++ {
-		utf8Password[i] = 0
-	}
+	defer func() { // clear out BMP version of the password before we return
+		for i := 0; i < len(p); i++ {
+			p[i] = 0
+		}
+	}()
 
 	if err != nil {
 		return nil, nil, err

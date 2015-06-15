@@ -15,9 +15,12 @@ if err != nil {
 	panic(err)
 }
 
-blocks, err := pkcs12.ConvertToPEM(p12, "password")
+blocks, err := pkcs12.ConvertToPEM(p12, passwordBytes)
 if err != nil {
 	panic(err)
+}
+for i := 0; i < len(passwordBytes); i++ {
+	passwordBytes[i] = 0 // clear password data after use
 }
 
 pemData := []byte{}
