@@ -27,9 +27,9 @@ type contentInfo struct {
 	Content     asn1.RawValue `asn1:"tag:0,explicit,optional"`
 }
 
-const (
-	oidDataContentType          = "1.2.840.113549.1.7.1"
-	oidEncryptedDataContentType = "1.2.840.113549.1.7.6"
+var (
+	oidDataContentType          = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 1}
+	oidEncryptedDataContentType = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 6}
 )
 
 type encryptedData struct {
@@ -116,16 +116,15 @@ func convertBag(bag *safeBag, password []byte) (*pem.Block, error) {
 		b.Headers[k] = v
 	}
 
-	bagType := bagTypeNameByOID[bag.ID.String()]
-	switch bagType {
-	case certBagType:
+	switch {
+	case bag.ID.Equal(oidCertBagType):
 		b.Type = CertificateType
 		certsData, err := decodeCertBag(bag.Value.Bytes)
 		if err != nil {
 			return nil, err
 		}
 		b.Bytes = certsData
-	case pkcs8ShroudedKeyBagType:
+	case bag.ID.Equal(oidPkcs8ShroudedKeyBagType):
 		b.Type = PrivateKeyType
 
 		key, err := decodePkcs8ShroudedKeyBag(bag.Value.Bytes, password)
@@ -150,32 +149,31 @@ func convertBag(bag *safeBag, password []byte) (*pem.Block, error) {
 	return b, nil
 }
 
-const (
-	oidFriendlyName     = "1.2.840.113549.1.9.20"
-	oidLocalKeyID       = "1.2.840.113549.1.9.21"
-	oidMicrosoftCSPName = "1.3.6.1.4.1.311.17.1"
+var (
+	oidFriendlyName     = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 20}
+	oidLocalKeyID       = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 21}
+	oidMicrosoftCSPName = asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 311, 17, 1}
 )
 
 var attributeNameByOID = map[string]string{
-	oidFriendlyName:     "friendlyName",
-	oidLocalKeyID:       "localKeyId",
-	oidMicrosoftCSPName: "Microsoft CSP Name", // openssl-compatible
+	oidFriendlyName.String():     "friendlyName",
+	oidLocalKeyID.String():       "localKeyId",
+	oidMicrosoftCSPName.String(): "Microsoft CSP Name", // openssl-compatible
 }
 
 func convertAttribute(attribute *pkcs12Attribute) (key, value string, err error) {
-	oid := attribute.ID.String()
-	key = attributeNameByOID[oid]
-	switch oid {
-	case oidMicrosoftCSPName:
+	key = attributeNameByOID[attribute.ID.String()]
+	switch {
+	case attribute.ID.Equal(oidMicrosoftCSPName):
 		fallthrough
-	case oidFriendlyName:
+	case attribute.ID.Equal(oidFriendlyName):
 		if _, err = asn1.Unmarshal(attribute.Value.Bytes, &attribute.Value); err != nil {
 			return
 		}
 		if value, err = decodeBMPString(attribute.Value.Bytes); err != nil {
 			return
 		}
-	case oidLocalKeyID:
+	case attribute.ID.Equal(oidLocalKeyID):
 		id := new([]byte)
 		if _, err = asn1.Unmarshal(attribute.Value.Bytes, id); err != nil {
 			return
@@ -213,10 +211,8 @@ func Decode(pfxData, utf8Password []byte) (privateKey interface{}, certificate *
 	}
 
 	for _, bag := range bags {
-		bagType := bagTypeNameByOID[bag.ID.String()]
-
-		switch bagType {
-		case certBagType:
+		switch {
+		case bag.ID.Equal(oidCertBagType):
 			certsData, err := decodeCertBag(bag.Value.Bytes)
 			if err != nil {
 				return nil, nil, err
@@ -230,7 +226,7 @@ func Decode(pfxData, utf8Password []byte) (privateKey interface{}, certificate *
 				return nil, nil, err
 			}
 			certificate = certs[0]
-		case pkcs8ShroudedKeyBagType:
+		case bag.ID.Equal(oidPkcs8ShroudedKeyBagType):
 			if privateKey, err = decodePkcs8ShroudedKeyBag(bag.Value.Bytes, p); err != nil {
 				return nil, nil, err
 			}
@@ -257,7 +253,7 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 		return nil, nil, NotImplementedError("can only decode v3 PFX PDU's")
 	}
 
-	if pfx.AuthSafe.ContentType.String() != oidDataContentType {
+	if !pfx.AuthSafe.ContentType.Equal(oidDataContentType) {
 		return nil, nil, NotImplementedError("only password-protected PFX is implemented")
 	}
 
@@ -293,12 +289,12 @@ func getSafeContents(p12Data, password []byte) (bags []safeBag, actualPassword [
 
 	for _, ci := range authenticatedSafe {
 		var data []byte
-		switch ci.ContentType.String() {
-		case oidDataContentType:
+		switch {
+		case ci.ContentType.Equal(oidDataContentType):
 			if _, err = asn1.Unmarshal(ci.Content.Bytes, &data); err != nil {
 				return
 			}
-		case oidEncryptedDataContentType:
+		case ci.ContentType.Equal(oidEncryptedDataContentType):
 			var encryptedData encryptedData
 			if _, err = asn1.Unmarshal(ci.Content.Bytes, &encryptedData); err != nil {
 				return
