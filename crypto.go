@@ -75,7 +75,7 @@ func pbDecrypt(info decryptable, password []byte) (decrypted []byte, err error) 
 	decrypted = make([]byte, len(encrypted))
 	cbc.CryptBlocks(decrypted, encrypted)
 
-	if psLen := int(decrypted[len(decrypted)-1]); psLen > 0 && psLen < 9 {
+	if psLen := int(decrypted[len(decrypted)-1]); psLen > 0 && psLen <= cbc.BlockSize() {
 		m := decrypted[:len(decrypted)-psLen]
 		ps := decrypted[len(decrypted)-psLen:]
 		if bytes.Compare(ps, bytes.Repeat([]byte{byte(psLen)}, psLen)) != 0 {
