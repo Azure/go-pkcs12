@@ -7,25 +7,18 @@ import (
 )
 
 //see https://tools.ietf.org/html/rfc7292#appendix-D
-var bagTypeNameByOID = map[string]string{
-	"1.2.840.113549.1.12.10.1.1": keyBagType,
-	"1.2.840.113549.1.12.10.1.2": pkcs8ShroudedKeyBagType,
-	"1.2.840.113549.1.12.10.1.3": certBagType,
-	"1.2.840.113549.1.12.10.1.4": crlBagType,
-	"1.2.840.113549.1.12.10.1.5": secretBagType,
-	"1.2.840.113549.1.12.10.1.6": safeContentsBagType,
-}
+var (
+	oidKeyBagType              = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 12, 10, 1, 1}
+	oidPkcs8ShroudedKeyBagType = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 12, 10, 1, 2}
+	oidCertBagType             = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 12, 10, 1, 3}
+	oidCrlBagType              = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 12, 10, 1, 4}
+	oidSecretBagType           = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 12, 10, 1, 5}
+	oidSafeContentsBagType     = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 12, 10, 1, 6}
+)
 
-const (
-	keyBagType              = "keyBag"
-	pkcs8ShroudedKeyBagType = "pkcs8ShroudedKeyBag"
-	certBagType             = "certBag"
-	crlBagType              = "crlBag"
-	secretBagType           = "secretBag"
-	safeContentsBagType     = "safeContentsBag"
-
-	oidCertTypeX509Certificate = "1.2.840.113549.1.9.22.1"
-	oidLocalKeyIDAttribute     = "1.2.840.113549.1.9.21"
+var (
+	oidCertTypeX509Certificate = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 22, 1}
+	oidLocalKeyIDAttribute     = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 21}
 )
 
 type certBag struct {
@@ -64,7 +57,7 @@ func decodeCertBag(asn1Data []byte) (x509Certificates []byte, err error) {
 		err = fmt.Errorf("error decoding cert bag: %v", err)
 		return nil, err
 	}
-	if bag.ID.String() != oidCertTypeX509Certificate {
+	if !bag.ID.Equal(oidCertTypeX509Certificate) {
 		return nil, NotImplementedError("only X509 certificates are supported")
 	}
 	return bag.Data, nil

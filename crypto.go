@@ -17,9 +17,14 @@ const (
 	pbewithSHAAnd40BitRC2CBC      = "pbewithSHAAnd40BitRC2-CBC"
 )
 
+var (
+	oidPbeWithSHAAnd3KeyTripleDESCBC = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 12, 1, 3}
+	oidPbewithSHAAnd40BitRC2CBC      = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 12, 1, 6}
+)
+
 var algByOID = map[string]string{
-	"1.2.840.113549.1.12.1.3": pbeWithSHAAnd3KeyTripleDESCBC,
-	"1.2.840.113549.1.12.1.6": pbewithSHAAnd40BitRC2CBC,
+	oidPbeWithSHAAnd3KeyTripleDESCBC.String(): pbeWithSHAAnd3KeyTripleDESCBC,
+	oidPbewithSHAAnd40BitRC2CBC.String():      pbewithSHAAnd40BitRC2CBC,
 }
 
 var blockcodeByAlg = map[string]func(key []byte) (cipher.Block, error){
@@ -70,7 +75,7 @@ func pbDecrypt(info decryptable, password []byte) (decrypted []byte, err error) 
 	decrypted = make([]byte, len(encrypted))
 	cbc.CryptBlocks(decrypted, encrypted)
 
-	if psLen := int(decrypted[len(decrypted)-1]); psLen > 0 && psLen < 9 {
+	if psLen := int(decrypted[len(decrypted)-1]); psLen > 0 && psLen <= cbc.BlockSize() {
 		m := decrypted[:len(decrypted)-psLen]
 		ps := decrypted[len(decrypted)-psLen:]
 		if bytes.Compare(ps, bytes.Repeat([]byte{byte(psLen)}, psLen)) != 0 {
