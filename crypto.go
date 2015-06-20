@@ -9,7 +9,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 
-	"github.com/dgryski/go-rc2"
+	"github.com/Azure/go-pkcs12/rc2"
 )
 
 const (
